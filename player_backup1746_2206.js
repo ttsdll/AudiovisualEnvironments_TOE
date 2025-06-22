@@ -8,7 +8,7 @@ let noBtn = document.getElementById('no-btn');
 const leaderboardElem = document.getElementById('leaderboard');
 let scoreDisplay = document.getElementById('score-display');
 const restartBtn = document.getElementById('restart-btn');
-const indexElem = document.getElementById('client-index');
+const indexElem = document.getElementById('client-index'); // Clientanzeige
 
 let clientId = null;
 let clientCount = 0;
@@ -17,7 +17,6 @@ let answered = false;
 let localScore = 0;
 let scores = {};
 let timer;
-let isMaster = false;
 
 const roomName = 'carquiz';
 
@@ -91,9 +90,7 @@ function startQuiz() {
     if (currentQuestion >= questions.length) {
       clearInterval(timer);
       showGameOver();
-      if (isMaster) sendMessage('*quiz-ended*');
     } else {
-      if (isMaster) sendMessage('*next-question*', currentQuestion);
       showQuestion(currentQuestion);
     }
   }, 8000);
@@ -140,9 +137,7 @@ function resetGame() {
     if (currentQuestion >= questions.length) {
       clearInterval(timer);
       showGameOver();
-      if (isMaster) sendMessage('*quiz-ended*');
     } else {
-      if (isMaster) sendMessage('*next-question*', currentQuestion);
       showQuestion(currentQuestion);
     }
   }, 8000);
@@ -166,9 +161,13 @@ yesBtn.addEventListener('click', () => handleAnswer(true));
 noBtn.addEventListener('click', () => handleAnswer(false));
 
 restartBtn.addEventListener('click', () => {
-  if (clientId === '0') {
+  console.log("🔁 Restart-Button gedrückt von Spieler ID:", clientId);
+  if (clientId === 1 || clientId === '1') {
     sendMessage('*restart*');
     resetGame();
+    console.log("Neustart ausgeführt");
+  } else {
+    console.log("Kein Neustart erlaubt – nur Spieler 0 darf");
   }
 });
 
@@ -176,6 +175,7 @@ socket.addEventListener('open', () => {
   sendMessage('*enter-room*', roomName);
   sendMessage('*subscribe-client-count*');
   setInterval(() => socket.send(''), 30000); // Keep-alive
+  console.log("WebSocket verbunden mit Raum:", roomName);
 });
 
 socket.addEventListener('message', (event) => {
@@ -185,18 +185,14 @@ socket.addEventListener('message', (event) => {
   switch (selector) {
     case '*client-id*':
       clientId = data[1];
-      isMaster = clientId === '0';
       scores[clientId] = 0;
       updateLeaderboard();
+      startQuiz();
       break;
 
     case '*client-count*':
       clientCount = data[1];
       updateLeaderboard();
-      if (isMaster && !timer && clientCount > 1) {
-        sendMessage('*start-quiz*');
-        startQuiz();
-      }
       break;
 
     case '*score-update*': {
@@ -206,23 +202,8 @@ socket.addEventListener('message', (event) => {
       break;
     }
 
-    case '*start-quiz*':
-      if (!timer) startQuiz();
-      break;
-
-    case '*next-question*':
-      currentQuestion = data[1];
-      showQuestion(currentQuestion);
-      break;
-
-    case '*quiz-ended*':
-      if (timer) {
-        clearInterval(timer);
-        showGameOver();
-      }
-      break;
-
     case '*restart*':
+      console.log("⏩ Neustartsignal empfangen!");
       resetGame();
       break;
   }
