@@ -175,7 +175,7 @@ socket.addEventListener('open', () => {
   sendMessage('*enter-room*', roomName);
   sendMessage('*subscribe-client-count*');
   setInterval(() => socket.send(''), 30000); // Keep-alive
-  console.log("✅ WebSocket verbunden mit Raum:", roomName);
+  console.log("WebSocket verbunden mit Raum:", roomName);
 });
 
 socket.addEventListener('message', (event) => {
