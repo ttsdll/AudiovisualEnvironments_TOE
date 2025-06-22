@@ -17,7 +17,6 @@ let answered = false;
 let localScore = 0;
 let scores = {};
 let timer;
-let isMaster = false;
 
 const roomName = 'carquiz';
 
@@ -67,9 +66,8 @@ function handleAnswer(isYes) {
   localScore += playerIsRight ? 100 : -50;
   scoreDisplay.textContent = localScore;
   scores[clientId] = localScore;
-  updateLeaderboard();
-
   sendMessage('*score-update*', [clientId, localScore]);
+  updateLeaderboard();
 
   const selectedBtn = isYes ? yesBtn : noBtn;
   selectedBtn.classList.add('selected');
@@ -91,9 +89,7 @@ function startQuiz() {
     if (currentQuestion >= questions.length) {
       clearInterval(timer);
       showGameOver();
-      if (isMaster) sendMessage('*quiz-ended*');
     } else {
-      if (isMaster) sendMessage('*next-question*', currentQuestion);
       showQuestion(currentQuestion);
     }
   }, 8000);
@@ -140,9 +136,7 @@ function resetGame() {
     if (currentQuestion >= questions.length) {
       clearInterval(timer);
       showGameOver();
-      if (isMaster) sendMessage('*quiz-ended*');
     } else {
-      if (isMaster) sendMessage('*next-question*', currentQuestion);
       showQuestion(currentQuestion);
     }
   }, 8000);
@@ -156,19 +150,18 @@ function updateLeaderboard() {
     entry.textContent = `Spieler ${id}: ${score}`;
     leaderboardElem.appendChild(entry);
   });
-
-  if (indexElem) {
-    indexElem.textContent = `#${clientId}/${clientCount}`;
-  }
 }
 
 yesBtn.addEventListener('click', () => handleAnswer(true));
 noBtn.addEventListener('click', () => handleAnswer(false));
 
 restartBtn.addEventListener('click', () => {
-  if (clientId === '0') {
+  if (clientId === 1 || clientId === '1') {
     sendMessage('*restart*');
     resetGame();
+    console.log("Neustart ausgeführt");
+  } else {
+    console.log("Kein Neustart erlaubt – nur Spieler 1 darf");
   }
 });
 
@@ -176,6 +169,7 @@ socket.addEventListener('open', () => {
   sendMessage('*enter-room*', roomName);
   sendMessage('*subscribe-client-count*');
   setInterval(() => socket.send(''), 30000); // Keep-alive
+  console.log("WebSocket verbunden mit Raum:", roomName);
 });
 
 socket.addEventListener('message', (event) => {
@@ -185,18 +179,15 @@ socket.addEventListener('message', (event) => {
   switch (selector) {
     case '*client-id*':
       clientId = data[1];
-      isMaster = clientId === '0';
       scores[clientId] = 0;
+      updateClientIndex();
       updateLeaderboard();
+      startQuiz();
       break;
 
     case '*client-count*':
       clientCount = data[1];
-      updateLeaderboard();
-      if (isMaster && !timer && clientCount > 1) {
-        sendMessage('*start-quiz*');
-        startQuiz();
-      }
+      updateClientIndex();
       break;
 
     case '*score-update*': {
@@ -206,24 +197,15 @@ socket.addEventListener('message', (event) => {
       break;
     }
 
-    case '*start-quiz*':
-      if (!timer) startQuiz();
-      break;
-
-    case '*next-question*':
-      currentQuestion = data[1];
-      showQuestion(currentQuestion);
-      break;
-
-    case '*quiz-ended*':
-      if (timer) {
-        clearInterval(timer);
-        showGameOver();
-      }
-      break;
-
     case '*restart*':
       resetGame();
       break;
   }
 });
+
+function updateClientIndex() {
+  if (indexElem) {
+    const activeClients = Object.keys(scores).length;
+    indexElem.textContent = `#${clientId}/${activeClients}`;
+  }
+}
