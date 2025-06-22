@@ -162,7 +162,7 @@ noBtn.addEventListener('click', () => handleAnswer(false));
 
 restartBtn.addEventListener('click', () => {
   console.log("🔁 Restart-Button gedrückt von Spieler ID:", clientId);
-  if (clientId === 0 || clientId === '0') {
+  if (clientId === 1 || clientId === '1') {
     sendMessage('*restart*');
     resetGame();
     console.log("Neustart ausgeführt");
