@@ -1,0 +1,121 @@
+body {
+  margin: 0;
+  font-family: 'Orbitron', sans-serif;
+  background: #0a0a0a;
+  color: #ffffff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.app-container {
+  width: 90%;
+  max-width: 600px;
+  padding: 2rem;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+  text-align: center;
+}
+
+.title {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  letter-spacing: 1px;
+}
+
+.question-box img {
+  width: 100%;
+  height: auto;
+  max-height: 250px;
+  border-radius: 15px;
+  object-fit: contain;
+  margin-bottom: 1rem;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+}
+
+.question-box p {
+  font-size: 1.25rem;
+  margin: 0.5rem 0;
+}
+
+.button-box {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin: 1.5rem 0;
+}
+
+.quiz-button {
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid #ffffff20;
+  border-radius: 50%;
+  width: 80px;
+  height: 80px;
+  font-size: 2rem;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  backdrop-filter: blur(5px);
+}
+
+.quiz-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
+}
+
+.quiz-button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  pointer-events: none;
+  transform: scale(1);
+}
+
+.quiz-button.selected {
+  border: 2px solid #ffffff;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.info-box,
+.leaderboard-box {
+  margin-top: 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1rem;
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+  font-size: 0.95rem;
+  box-shadow: inset 0 0 5px rgba(255, 255, 255, 0.1);
+}
+
+.leaderboard-box div {
+  margin: 0.3rem 0;
+}
+.restart-button {
+  padding: 0.75rem 2rem;
+  font-size: 1.2rem;
+  font-family: 'Orbitron', sans-serif;
+  border: none;
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  display: none;         /* Neu: standardmäßig unsichtbar */
+  margin-top: 1.5rem;     /* Neu: Abstand nach oben */
+  align-self: center;     /* Neu: mittige Ausrichtung in flex-Boxen */
+}
+
+.restart-button:hover:not([disabled]) {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
+}
+.client-index {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: #aaa;
+  text-shadow: 0 0 2px rgba(255, 255, 255, 0.2);
+}

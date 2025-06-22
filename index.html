@@ -1,0 +1,36 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PartMatch Quiz</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <h1 class="title">PartMatch Quiz</h1>
+
+    <div id="question-container" class="question-box">
+      <img id="part-image" src="" alt="Autoteil" />
+      <p id="part-label">Warte auf Start …</p>
+    </div>
+
+    <div class="button-box">
+      <button id="yes-btn" class="quiz-button">✅</button>
+      <button id="no-btn" class="quiz-button">❌</button>
+    </div>
+
+    <div id="info-container" class="info-box">Punkte: <span id="score-display">0</span></div>
+    <div id="leaderboard" class="leaderboard-box">
+      <h3>Leaderboard</h3>
+      <div id="leaderboard-entries"></div>
+    </div>
+    <button id="restart-btn" class="restart-button" style="display: none;">🔄 Neustarten</button>
+    <div id="client-index" class="info-box">#0/0</div>
+  <script src="player.js"></script>
+</body>
+</html>
