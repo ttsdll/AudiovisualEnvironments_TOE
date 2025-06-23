@@ -68,7 +68,7 @@ function handleAnswer(isYes) {
   scores[clientId] = localScore;
   updateLeaderboard();
 
-  sendMessage('*score-update*', [clientId, localScore]);
+  sendMessage('*broadcast-message*', ['*score-update*', [clientId, localScore]]);
 
   const selectedBtn = isYes ? yesBtn : noBtn;
   selectedBtn.classList.add('selected');
@@ -81,7 +81,7 @@ function startQuiz() {
   localScore = 0;
   scoreDisplay.textContent = localScore;
   scores[clientId] = localScore;
-  sendMessage('*score-update*', [clientId, localScore]);
+  sendMessage('*broadcast-message*', ['*score-update*', [clientId, localScore]]);
   updateLeaderboard();
   restartBtn.style.display = 'none';
   showQuestion(currentQuestion);
@@ -147,7 +147,6 @@ function resetGame() {
 function updateLeaderboard() {
   leaderboardElem.innerHTML = '<h3>Leaderboard</h3>';
 
-  // Sicherstellen, dass Scores für alle bekannten Spieler vorhanden sind
   for (let i = 0; i < clientCount; i++) {
     if (!(i in scores)) {
       scores[i] = 0;
@@ -161,7 +160,7 @@ function updateLeaderboard() {
     leaderboardElem.appendChild(entry);
   });
 
-  if (indexElem) {
+  if (indexElem && clientId !== null) {
     indexElem.textContent = `#${parseInt(clientId) + 1}/${clientCount}`;
   }
 }
@@ -172,7 +171,7 @@ noBtn.addEventListener('click', () => handleAnswer(false));
 restartBtn.addEventListener('click', () => {
   console.log("🔁 Restart-Button gedrückt von Spieler ID:", clientId);
   if (clientId === 0 || clientId === '0') {
-    sendMessage('*restart*');
+    sendMessage('*broadcast-message*', ['*restart*']);
     resetGame();
     console.log("Neustart ausgeführt");
   } else {
@@ -195,20 +194,13 @@ socket.addEventListener('message', (event) => {
     case '*client-id*':
       clientId = data[1];
       scores[clientId] = 0;
-
-      // Punktestand sofort broadcasten, damit andere Clients ihn erhalten
-      sendMessage('*score-update*', [clientId, 0]);
-
+      sendMessage('*broadcast-message*', ['*score-update*', [clientId, 0]]);
       updateLeaderboard();
       startQuiz();
       break;
 
     case '*client-count*':
       clientCount = data[1];
-
-      // Sichere Synchronisation: erneut Punktestand senden
-      sendMessage('*score-update*', [clientId, localScore]);
-
       updateLeaderboard();
       break;
 
