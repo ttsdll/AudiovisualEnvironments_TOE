@@ -147,6 +147,7 @@ function resetGame() {
 function updateLeaderboard() {
   leaderboardElem.innerHTML = '<h3>Leaderboard</h3>';
 
+  // Sicherstellen, dass Scores für alle bekannten Spieler vorhanden sind
   for (let i = 0; i < clientCount; i++) {
     if (!(i in scores)) {
       scores[i] = 0;
@@ -194,14 +195,20 @@ socket.addEventListener('message', (event) => {
     case '*client-id*':
       clientId = data[1];
       scores[clientId] = 0;
-      sendMessage('*score-update*', [clientId, 0]); // Eigene Punkte senden
+
+      // Punktestand sofort broadcasten, damit andere Clients ihn erhalten
+      sendMessage('*score-update*', [clientId, 0]);
+
       updateLeaderboard();
       startQuiz();
       break;
 
     case '*client-count*':
       clientCount = data[1];
-      sendMessage('*score-update*', [clientId, localScore]); // Synchronisation
+
+      // Sichere Synchronisation: erneut Punktestand senden
+      sendMessage('*score-update*', [clientId, localScore]);
+
       updateLeaderboard();
       break;
 
