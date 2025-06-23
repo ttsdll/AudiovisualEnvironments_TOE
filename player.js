@@ -81,6 +81,7 @@ function startQuiz() {
   localScore = 0;
   scoreDisplay.textContent = localScore;
   scores[clientId] = localScore;
+  sendMessage('*score-update*', [clientId, localScore]);
   updateLeaderboard();
   restartBtn.style.display = 'none';
   showQuestion(currentQuestion);
@@ -146,7 +147,6 @@ function resetGame() {
 function updateLeaderboard() {
   leaderboardElem.innerHTML = '<h3>Leaderboard</h3>';
 
-  // Ergänzung: Stelle sicher, dass jeder Slot von 0 bis clientCount - 1 existiert
   for (let i = 0; i < clientCount; i++) {
     if (!(i in scores)) {
       scores[i] = 0;
@@ -194,16 +194,14 @@ socket.addEventListener('message', (event) => {
     case '*client-id*':
       clientId = data[1];
       scores[clientId] = 0;
-
-      // Direkt Score senden, damit andere dich kennen
-      sendMessage('*score-update*', [clientId, 0]);
-
+      sendMessage('*score-update*', [clientId, 0]); // Eigene Punkte senden
       updateLeaderboard();
       startQuiz();
       break;
 
     case '*client-count*':
       clientCount = data[1];
+      sendMessage('*score-update*', [clientId, localScore]); // Synchronisation
       updateLeaderboard();
       break;
 
