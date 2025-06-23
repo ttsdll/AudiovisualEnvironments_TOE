@@ -66,9 +66,8 @@ function handleAnswer(isYes) {
   localScore += playerIsRight ? 100 : -50;
   scoreDisplay.textContent = localScore;
   scores[clientId] = localScore;
-  updateLeaderboard();
-
   sendMessage('*score-update*', [clientId, localScore]);
+  updateLeaderboard();
 
   const selectedBtn = isYes ? yesBtn : noBtn;
   selectedBtn.classList.add('selected');
@@ -148,25 +147,16 @@ function updateLeaderboard() {
   const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
   sorted.forEach(([id, score]) => {
     const entry = document.createElement('div');
-    entry.textContent = `Spieler ${parseInt(id) + 1}: ${score}`;
+    entry.textContent = `Spieler ${id}: ${score}`;
     leaderboardElem.appendChild(entry);
   });
-  updateClientIndex();
-}
-
-function updateClientIndex() {
-  if (indexElem) {
-    const activeClients = Object.keys(scores).length;
-    indexElem.textContent = `#${parseInt(clientId) + 1}/${activeClients}`;
-  }
 }
 
 yesBtn.addEventListener('click', () => handleAnswer(true));
 noBtn.addEventListener('click', () => handleAnswer(false));
 
 restartBtn.addEventListener('click', () => {
-  console.log("🔁 Restart-Button gedrückt von Spieler ID:", clientId);
-  if (clientId === 0 || clientId === '0') {
+  if (clientId === 1 || clientId === '1') {
     sendMessage('*restart*');
     resetGame();
     console.log("Neustart ausgeführt");
@@ -190,6 +180,7 @@ socket.addEventListener('message', (event) => {
     case '*client-id*':
       clientId = data[1];
       scores[clientId] = 0;
+      updateClientIndex();
       updateLeaderboard();
       startQuiz();
       break;
@@ -207,8 +198,14 @@ socket.addEventListener('message', (event) => {
     }
 
     case '*restart*':
-      console.log("⏩ Neustartsignal empfangen!");
       resetGame();
       break;
   }
 });
+
+function updateClientIndex() {
+  if (indexElem) {
+    const activeClients = Object.keys(scores).length;
+    indexElem.textContent = `#${clientId}/${activeClients}`;
+  }
+}
