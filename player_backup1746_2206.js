@@ -167,7 +167,7 @@ restartBtn.addEventListener('click', () => {
     resetGame();
     console.log("Neustart ausgeführt");
   } else {
-    console.log("Kein Neustart erlaubt – nur Spieler 0 darf");
+    console.log("Kein Neustart erlaubt – nur Spieler 1 darf");
   }
 });
 
