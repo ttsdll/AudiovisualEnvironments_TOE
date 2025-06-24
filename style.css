@@ -74,6 +74,7 @@ body {
   pointer-events: none;
 }
 
+/* Farbige Buttons */
 .green-button {
   background-color: #2ecc71; /* Grün */
 }

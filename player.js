@@ -79,6 +79,7 @@ function handleAnswer(isYes) {
 
 function startQuiz() {
   currentQuestion = 0;
+  localScore = 0;
   scoreDisplay.textContent = localScore;
   scores[clientId] = localScore;
   sendMessage('*broadcast-message*', ['*score-update*', [clientId, localScore]]);
@@ -121,8 +122,12 @@ function resetGame() {
 
   const buttonBox = document.querySelector('.button-box');
   buttonBox.innerHTML = `
-    <button id="yes-btn" class="quiz-button yes"><img src="assets/icons/check.svg" alt="Ja" /></button>
-    <button id="no-btn" class="quiz-button no"><img src="assets/icons/xmark.svg" alt="Nein" /></button>
+    <button id="yes-btn" class="quiz-button green-button">
+      <img src="assets/icons/check.svg" alt="Ja" />
+    </button>
+    <button id="no-btn" class="quiz-button red-button">
+      <img src="assets/icons/xmark.svg" alt="Nein" />
+    </button>
   `;
   yesBtn = document.getElementById('yes-btn');
   noBtn = document.getElementById('no-btn');
@@ -163,9 +168,11 @@ function updateLeaderboard() {
   }
 }
 
-// Event Listener
-yesBtn.addEventListener('click', () => handleAnswer(true));
-noBtn.addEventListener('click', () => handleAnswer(false));
+// Button Event Listener
+document.addEventListener('click', (e) => {
+  if (e.target.closest('#yes-btn')) handleAnswer(true);
+  if (e.target.closest('#no-btn')) handleAnswer(false);
+});
 
 restartBtn.addEventListener('click', () => {
   if (clientId === 0 || clientId === '0') {
@@ -178,9 +185,9 @@ restartBtn.addEventListener('click', () => {
 socket.addEventListener('open', () => {
   sendMessage('*enter-room*', roomName);
   sendMessage('*subscribe-client-count*');
-  setInterval(() => socket.send(''), 30000); // Keep-alive
 
-  // Sende regelmäßig Score zur Synchronisierung
+  // Keep-alive und Score-Sync
+  setInterval(() => socket.send(''), 30000);
   setInterval(() => {
     sendMessage('*broadcast-message*', ['*score-update*', [clientId, localScore]]);
   }, 10000);
@@ -195,8 +202,8 @@ socket.addEventListener('message', (event) => {
   switch (selector) {
     case '*client-id*':
       clientId = data[1];
-      scores[clientId] = localScore;
-      sendMessage('*broadcast-message*', ['*score-update*', [clientId, localScore]]);
+      scores[clientId] = 0;
+      sendMessage('*broadcast-message*', ['*score-update*', [clientId, 0]]);
       updateLeaderboard();
       startQuiz();
       break;
