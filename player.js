@@ -99,8 +99,8 @@ function startQuiz() {
 }
 
 function showGameOver() {
-  questionElem.innerHTML = '<h2>Spiel beendet!</h2>';
-  infoElem.innerHTML = `<p>DEIN PUNKTESTAND ${localScore}</p>`;
+  questionElem.innerHTML = '<div class="game-over-text">GAME OVER</div>';
+  infoElem.innerHTML = `<p>Dein Punktestand: ${localScore}</p>`;
   document.querySelector('.button-box').innerHTML = '';
   restartBtn.style.display = 'block';
   updateLeaderboard();
