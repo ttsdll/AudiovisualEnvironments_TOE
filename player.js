@@ -100,7 +100,7 @@ function startQuiz() {
 
 function showGameOver() {
   questionElem.innerHTML = '<h2>Spiel beendet!</h2>';
-  infoElem.innerHTML = `<p>Dein Punktestand: ${localScore}</p>`;
+  infoElem.innerHTML = `<p>DEIN PUNKTESTAND ${localScore}</p>`;
   document.querySelector('.button-box').innerHTML = '';
   restartBtn.style.display = 'block';
   updateLeaderboard();
@@ -146,7 +146,7 @@ function resetGame() {
 }
 
 function updateLeaderboard() {
-  leaderboardElem.innerHTML = '<h3>Leaderboard</h3>';
+  leaderboardElem.innerHTML = '<h3>LEADERBOARD</h3>';
 
   for (let i = 0; i < clientCount; i++) {
     if (!(i in scores)) {
