@@ -147,7 +147,13 @@ function resetGame() {
 function updateLeaderboard() {
   leaderboardElem.innerHTML = '<h3>LEADERBOARD</h3>';
 
-  const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+  // Nur Scores von aktiven Clients (0 bis clientCount - 1)
+  const activeScores = {};
+  for (let i = 0; i < clientCount; i++) {
+    activeScores[i] = scores[i] || 0;
+  }
+
+  const sorted = Object.entries(activeScores).sort((a, b) => b[1] - a[1]);
   sorted.forEach(([id, score]) => {
     const entry = document.createElement('div');
     entry.textContent = `Spieler ${parseInt(id) + 1}: ${score}`;
@@ -163,22 +169,17 @@ yesBtn.addEventListener('click', () => handleAnswer(true));
 noBtn.addEventListener('click', () => handleAnswer(false));
 
 restartBtn.addEventListener('click', () => {
-  console.log("🔁 Restart-Button gedrückt von Spieler ID:", clientId);
   if (clientId === 0 || clientId === '0') {
     sendMessage('*broadcast-message*', ['*restart*']);
     resetGame();
-    console.log("Neustart ausgeführt");
-  } else {
-    console.log("Kein Neustart erlaubt – nur Spieler 1 darf");
   }
 });
 
 socket.addEventListener('open', () => {
   sendMessage('*enter-room*', roomName);
   sendMessage('*subscribe-client-count*');
-  setInterval(() => socket.send(''), 30000);
-  console.log("WebSocket verbunden mit Raum:", roomName);
 
+  setInterval(() => socket.send(''), 30000);
   setInterval(() => {
     sendMessage('*broadcast-message*', ['*score-update*', [clientId, localScore]]);
   }, 10000);
@@ -187,7 +188,6 @@ socket.addEventListener('open', () => {
 socket.addEventListener('message', (event) => {
   const data = JSON.parse(event.data);
   const selector = data[0];
-
   console.log("📥 Nachricht empfangen:", selector, data[1]);
 
   switch (selector) {
@@ -201,6 +201,10 @@ socket.addEventListener('message', (event) => {
 
     case '*client-count*':
       clientCount = data[1];
+      // Entferne inaktive IDs
+      for (let id in scores) {
+        if (parseInt(id) >= clientCount) delete scores[id];
+      }
       sendMessage('*broadcast-message*', ['*score-update*', [clientId, localScore]]);
       updateLeaderboard();
       break;
@@ -212,15 +216,7 @@ socket.addEventListener('message', (event) => {
       break;
     }
 
-    case '*player-left*': {
-      const leftId = data[1];
-      delete scores[leftId];
-      updateLeaderboard();
-      break;
-    }
-
     case '*restart*':
-      console.log("⏩ Neustartsignal empfangen!");
       resetGame();
       break;
   }
