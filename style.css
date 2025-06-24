@@ -24,28 +24,27 @@ body {
   font-size: 2rem;
   margin-bottom: 1rem;
   letter-spacing: 1px;
+  color: white;
 }
 
 .question-box {
-  background: #ffffff;
-  border-radius: 15px;
+  background: white;
   padding: 1rem;
+  border-radius: 15px;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+  margin-bottom: 1rem;
 }
 
 .question-box img {
   width: 100%;
-  height: auto;
   max-height: 250px;
-  border-radius: 15px;
   object-fit: contain;
   margin-bottom: 1rem;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
 }
 
 .question-box p {
   font-size: 1.25rem;
-  margin: 0.5rem 0;
-  color: #000000;
+  color: black;
 }
 
 .button-box {
@@ -56,33 +55,36 @@ body {
 }
 
 .quiz-button {
-  background: rgba(255, 255, 255, 0.1);
-  border: 2px solid #ffffff20;
+  background: none;
+  border: none;
   border-radius: 50%;
   width: 80px;
   height: 80px;
-  font-size: 2rem;
-  color: #ffffff;
+  padding: 0;
   cursor: pointer;
-  transition: all 0.2s ease-in-out;
-  backdrop-filter: blur(5px);
+  transition: transform 0.2s ease-in-out;
 }
 
-.quiz-button:hover {
-  background: rgba(255, 255, 255, 0.2);
+.quiz-button img {
+  width: 40px;
+  height: 40px;
+}
+
+.quiz-button.yes {
+  background-color: #2ecc71; /* Grün */
+}
+
+.quiz-button.no {
+  background-color: #e74c3c; /* Rot */
+}
+
+.quiz-button:hover:not(:disabled) {
   transform: scale(1.05);
 }
 
 .quiz-button:disabled {
   opacity: 0.3;
-  cursor: not-allowed;
   pointer-events: none;
-  transform: scale(1);
-}
-
-.quiz-button.selected {
-  border: 2px solid #ffffff;
-  background: rgba(255, 255, 255, 0.25);
 }
 
 .info-box,
@@ -106,12 +108,10 @@ body {
   font-family: "montserrat", sans-serif;
   border: none;
   border-radius: 12px;
-  backdrop-filter: blur(8px);
   background: rgba(255, 255, 255, 0.1);
   color: white;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
   display: none;
   margin-top: 1.5rem;
   align-self: center;
@@ -130,10 +130,9 @@ body {
 }
 
 .game-over-text {
+  color: black;
   font-size: 2.5rem;
-  font-weight: 700;
-  color: #000;
+  font-weight: bold;
   text-align: center;
   padding: 3rem 0;
-  font-family: "montserrat", sans-serif;
 }

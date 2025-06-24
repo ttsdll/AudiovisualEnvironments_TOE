@@ -27,6 +27,7 @@ const questions = [
   { image: 'assets/images/teil4.jpg', label: 'Turbolader', correct: false }
 ];
 
+// Web Audio API
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 function playClickSound() {
   const oscillator = audioCtx.createOscillator();
@@ -78,7 +79,6 @@ function handleAnswer(isYes) {
 
 function startQuiz() {
   currentQuestion = 0;
-  localScore = 0;
   scoreDisplay.textContent = localScore;
   scores[clientId] = localScore;
   sendMessage('*broadcast-message*', ['*score-update*', [clientId, localScore]]);
@@ -107,8 +107,7 @@ function showGameOver() {
 
 function resetGame() {
   currentQuestion = 0;
-  localScore = 0;
-  scores[clientId] = 0;
+  scoreDisplay.textContent = localScore;
 
   infoElem.innerHTML = `Punkte: <span id="score-display">${localScore}</span>`;
   scoreDisplay = document.getElementById('score-display');
@@ -122,8 +121,8 @@ function resetGame() {
 
   const buttonBox = document.querySelector('.button-box');
   buttonBox.innerHTML = `
-    <button id="yes-btn" class="quiz-button">✅</button>
-    <button id="no-btn" class="quiz-button">❌</button>
+    <button id="yes-btn" class="quiz-button yes"><img src="assets/icons/check.svg" alt="Ja" /></button>
+    <button id="no-btn" class="quiz-button no"><img src="assets/icons/xmark.svg" alt="Nein" /></button>
   `;
   yesBtn = document.getElementById('yes-btn');
   noBtn = document.getElementById('no-btn');
@@ -147,13 +146,12 @@ function resetGame() {
 function updateLeaderboard() {
   leaderboardElem.innerHTML = '<h3>LEADERBOARD</h3>';
 
-  // Nur Scores von aktiven Clients (0 bis clientCount - 1)
-  const activeScores = {};
-  for (let i = 0; i < clientCount; i++) {
-    activeScores[i] = scores[i] || 0;
-  }
+  // Entferne Scores, die nicht mehr aktive Clients sind
+  Object.keys(scores).forEach(id => {
+    if (parseInt(id) >= clientCount) delete scores[id];
+  });
 
-  const sorted = Object.entries(activeScores).sort((a, b) => b[1] - a[1]);
+  const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
   sorted.forEach(([id, score]) => {
     const entry = document.createElement('div');
     entry.textContent = `Spieler ${parseInt(id) + 1}: ${score}`;
@@ -165,6 +163,7 @@ function updateLeaderboard() {
   }
 }
 
+// Event Listener
 yesBtn.addEventListener('click', () => handleAnswer(true));
 noBtn.addEventListener('click', () => handleAnswer(false));
 
@@ -175,11 +174,13 @@ restartBtn.addEventListener('click', () => {
   }
 });
 
+// WebSocket Setup
 socket.addEventListener('open', () => {
   sendMessage('*enter-room*', roomName);
   sendMessage('*subscribe-client-count*');
+  setInterval(() => socket.send(''), 30000); // Keep-alive
 
-  setInterval(() => socket.send(''), 30000);
+  // Sende regelmäßig Score zur Synchronisierung
   setInterval(() => {
     sendMessage('*broadcast-message*', ['*score-update*', [clientId, localScore]]);
   }, 10000);
@@ -188,24 +189,20 @@ socket.addEventListener('open', () => {
 socket.addEventListener('message', (event) => {
   const data = JSON.parse(event.data);
   const selector = data[0];
+
   console.log("📥 Nachricht empfangen:", selector, data[1]);
 
   switch (selector) {
     case '*client-id*':
       clientId = data[1];
-      scores[clientId] = 0;
-      sendMessage('*broadcast-message*', ['*score-update*', [clientId, 0]]);
+      scores[clientId] = localScore;
+      sendMessage('*broadcast-message*', ['*score-update*', [clientId, localScore]]);
       updateLeaderboard();
       startQuiz();
       break;
 
     case '*client-count*':
       clientCount = data[1];
-      // Entferne inaktive IDs
-      for (let id in scores) {
-        if (parseInt(id) >= clientCount) delete scores[id];
-      }
-      sendMessage('*broadcast-message*', ['*score-update*', [clientId, localScore]]);
       updateLeaderboard();
       break;
 
