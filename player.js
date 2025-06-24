@@ -179,13 +179,10 @@ startBtn.addEventListener('click', () => {
   }
 });
 
-yesBtn.addEventListener('click', () => handleAnswer(true));
-noBtn.addEventListener('click', () => handleAnswer(false));
-
 socket.addEventListener('open', () => {
   sendMessage('*enter-room*', roomName);
   sendMessage('*subscribe-client-count*');
-  setInterval(() => socket.send(''), 30000);
+  setInterval(() => socket.send(''), 30000); // Keep-alive
   setInterval(() => {
     sendMessage('*broadcast-message*', ['*score-update*', [clientId, localScore]]);
   }, 10000);
@@ -202,6 +199,9 @@ socket.addEventListener('message', (event) => {
       scores[clientId] = 0;
       sendMessage('*broadcast-message*', ['*score-update*', [clientId, 0]]);
       updateLeaderboard();
+
+      // ✅ Startscreen nach Verbindungsaufbau anzeigen
+      overlay.style.display = 'flex';
       break;
 
     case '*client-count*':
