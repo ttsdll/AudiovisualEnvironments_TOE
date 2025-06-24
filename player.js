@@ -108,7 +108,8 @@ function showGameOver() {
 
 function resetGame() {
   currentQuestion = 0;
-  scoreDisplay.textContent = localScore;
+  localScore = 0;
+  scores[clientId] = 0;
 
   infoElem.innerHTML = `Punkte: <span id="score-display">${localScore}</span>`;
   scoreDisplay = document.getElementById('score-display');
@@ -122,12 +123,8 @@ function resetGame() {
 
   const buttonBox = document.querySelector('.button-box');
   buttonBox.innerHTML = `
-    <button id="yes-btn" class="quiz-button green-button">
-      <img src="assets/icons/check.svg" alt="Ja" />
-    </button>
-    <button id="no-btn" class="quiz-button red-button">
-      <img src="assets/icons/xmark.svg" alt="Nein" />
-    </button>
+    <button id="yes-btn" class="quiz-button">✅</button>
+    <button id="no-btn" class="quiz-button">❌</button>
   `;
   yesBtn = document.getElementById('yes-btn');
   noBtn = document.getElementById('no-btn');
@@ -151,10 +148,11 @@ function resetGame() {
 function updateLeaderboard() {
   leaderboardElem.innerHTML = '<h3>LEADERBOARD</h3>';
 
-  // Entferne Scores, die nicht mehr aktive Clients sind
-  Object.keys(scores).forEach(id => {
-    if (parseInt(id) >= clientCount) delete scores[id];
-  });
+  for (let i = 0; i < clientCount; i++) {
+    if (!(i in scores)) {
+      scores[i] = 0;
+    }
+  }
 
   const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
   sorted.forEach(([id, score]) => {
@@ -168,26 +166,27 @@ function updateLeaderboard() {
   }
 }
 
-// Button Event Listener
-document.addEventListener('click', (e) => {
-  if (e.target.closest('#yes-btn')) handleAnswer(true);
-  if (e.target.closest('#no-btn')) handleAnswer(false);
-});
+yesBtn.addEventListener('click', () => handleAnswer(true));
+noBtn.addEventListener('click', () => handleAnswer(false));
 
 restartBtn.addEventListener('click', () => {
+  console.log("🔁 Restart-Button gedrückt von Spieler ID:", clientId);
   if (clientId === 0 || clientId === '0') {
     sendMessage('*broadcast-message*', ['*restart*']);
     resetGame();
+    console.log("Neustart ausgeführt");
+  } else {
+    console.log("Kein Neustart erlaubt – nur Spieler 1 darf");
   }
 });
 
-// WebSocket Setup
 socket.addEventListener('open', () => {
   sendMessage('*enter-room*', roomName);
   sendMessage('*subscribe-client-count*');
+  setInterval(() => socket.send(''), 30000); // Keep-alive
+  console.log("WebSocket verbunden mit Raum:", roomName);
 
-  // Keep-alive und Score-Sync
-  setInterval(() => socket.send(''), 30000);
+  // ⏱️ Änderung 2: Score regelmäßig senden
   setInterval(() => {
     sendMessage('*broadcast-message*', ['*score-update*', [clientId, localScore]]);
   }, 10000);
@@ -210,6 +209,10 @@ socket.addEventListener('message', (event) => {
 
     case '*client-count*':
       clientCount = data[1];
+
+      // ✅ Änderung 1: Score nach clientCount aktualisieren
+      sendMessage('*broadcast-message*', ['*score-update*', [clientId, localScore]]);
+
       updateLeaderboard();
       break;
 
@@ -221,6 +224,7 @@ socket.addEventListener('message', (event) => {
     }
 
     case '*restart*':
+      console.log("⏩ Neustartsignal empfangen!");
       resetGame();
       break;
   }
