@@ -1,6 +1,9 @@
+/* Globale Einstellungen */
 body {
   margin: 0;
-  font-family: 'Orbitron', sans-serif;
+  font-family: "montserrat", sans-serif;
+  font-weight: 700;
+  font-style: normal;
   background: #0a0a0a;
   color: #ffffff;
   display: flex;
@@ -9,6 +12,7 @@ body {
   min-height: 100vh;
 }
 
+/* Hauptcontainer */
 .app-container {
   width: 90%;
   max-width: 600px;
@@ -20,27 +24,37 @@ body {
   text-align: center;
 }
 
+/* Titel */
 .title {
   font-size: 2rem;
   margin-bottom: 1rem;
   letter-spacing: 1px;
 }
 
+/* Bildcontainer (weiß gefärbt) */
+.question-box {
+  background: #ffffff; /* Hintergrund weiß */
+  border-radius: 15px;
+  padding: 1rem;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+}
+
 .question-box img {
   width: 100%;
   height: auto;
   max-height: 250px;
-  border-radius: 15px;
   object-fit: contain;
   margin-bottom: 1rem;
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
 }
 
 .question-box p {
   font-size: 1.25rem;
   margin: 0.5rem 0;
+  color: #000; /* Schwarzer Text auf weißem Grund */
 }
 
+/* Antwort-Buttons */
 .button-box {
   display: flex;
   justify-content: center;
@@ -78,6 +92,7 @@ body {
   background: rgba(255, 255, 255, 0.25);
 }
 
+/* Punktestand und Leaderboard */
 .info-box,
 .leaderboard-box {
   margin-top: 1.5rem;
@@ -89,20 +104,15 @@ body {
   box-shadow: inset 0 0 5px rgba(255, 255, 255, 0.1);
 }
 
-/* Scrollbar für viele Spieler im Leaderboard */
-.leaderboard-box {
-  max-height: 200px;
-  overflow-y: auto;
-}
-
 .leaderboard-box div {
   margin: 0.3rem 0;
 }
 
+/* Restart-Button */
 .restart-button {
   padding: 0.75rem 2rem;
   font-size: 1.2rem;
-  font-family: 'Orbitron', sans-serif;
+  font-family: "montserrat", sans-serif;
   border: none;
   border-radius: 12px;
   backdrop-filter: blur(8px);
@@ -121,6 +131,7 @@ body {
   transform: scale(1.05);
 }
 
+/* Spieleranzeige */
 .client-index {
   margin-top: 1rem;
   font-size: 0.9rem;
