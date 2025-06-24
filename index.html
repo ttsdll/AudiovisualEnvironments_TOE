@@ -4,24 +4,19 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AUTOTEIL-QUIZ</title>
-
-  <!-- Schriftart + Styles -->
   <link rel="stylesheet" href="https://use.typekit.net/mpk6vqj.css">
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="app-container">
     <h1 class="title">AUTOTEIL-QUIZ</h1>
-
     <div id="client-index" class="client-index">Verbindung …</div>
 
-    <!-- Quiz-Anzeige -->
     <div id="question-container" class="question-box">
       <img id="part-image" src="" alt="Autoteil" />
-      <p id="part-label">Warte auf Start …</p>
+      <p id="part-label">Warte auf Start…</p>
     </div>
 
-    <!-- Antwortbuttons -->
     <div class="button-box">
       <button id="yes-btn" class="quiz-button green-button">
         <img src="assets/icons/check.svg" alt="Ja" />
@@ -31,31 +26,17 @@
       </button>
     </div>
 
-    <!-- Punkteanzeige -->
     <div id="info-container" class="info-box">
       PUNKTE: <span id="score-display">0</span>
     </div>
 
-    <!-- Leaderboard -->
     <div id="leaderboard" class="leaderboard-box">
       <h3>LEADERBOARD</h3>
     </div>
 
-    <!-- Restart -->
-    <button id="restart-btn" class="restart-button" style="display: none;">
-      NEUSTARTEN
-    </button>
+    <button id="restart-btn" class="restart-button" style="display: none;">NEUSTARTEN</button>
   </div>
 
-  <!-- Startoverlay -->
-  <div id="start-overlay" class="start-overlay">
-    <div class="start-content">
-      <h2>Bereit für das Quiz?</h2>
-      <button id="start-btn" class="start-button">START</button>
-    </div>
-  </div>
-
-  <!-- Skript -->
   <script src="player.js"></script>
 </body>
 </html>
