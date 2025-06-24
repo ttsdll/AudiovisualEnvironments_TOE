@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AUTOTEIL-QUIZ</title>
 
-  <!-- Styles -->
-   <link rel="stylesheet" href="https://use.typekit.net/mpk6vqj.css">
+  <!-- Schriftart + Styles -->
+  <link rel="stylesheet" href="https://use.typekit.net/mpk6vqj.css">
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -15,10 +15,10 @@
     <!-- Titel -->
     <h1 class="title">AUTOTEIL-QUIZ</h1>
 
-    <!-- Anzeige der eigenen ID und Gesamtanzahl -->
+    <!-- Anzeige der Client-ID -->
     <div id="client-index" class="client-index">Verbindung …</div>
 
-    <!-- Quizfrage -->
+    <!-- Quiz-Bereich -->
     <div id="question-container" class="question-box">
       <img id="part-image" src="" alt="Autoteil" />
       <p id="part-label">Warte auf Start…</p>
@@ -26,8 +26,8 @@
 
     <!-- Antwort-Buttons -->
     <div class="button-box">
-      <button id="yes-btn" class="quiz-button">✅</button>
-      <button id="no-btn" class="quiz-button">❌</button>
+      <button id="yes-btn" class="quiz-button" aria-label="Ja">✅</button>
+      <button id="no-btn" class="quiz-button" aria-label="Nein">❌</button>
     </div>
 
     <!-- Punktestand -->
@@ -38,14 +38,15 @@
     <!-- Leaderboard -->
     <div id="leaderboard" class="leaderboard-box">
       <h3>LEADERBOARD</h3>
-      <!-- Dynamische Einträge folgen durch JavaScript -->
+      <!-- Dynamische Spieler-Einträge per JS -->
     </div>
 
-    <!-- Restart-Button -->
-    <button id="restart-btn" class="restart-button" style="display: none;">NEUSTARTEN</button>
+    <!-- Neustart -->
+    <button id="restart-btn" class="restart-button">NEUSTARTEN</button>
+
   </div>
 
-  <!-- Skript -->
+  <!-- Spiel-Logik -->
   <script src="player.js"></script>
 </body>
 </html>
