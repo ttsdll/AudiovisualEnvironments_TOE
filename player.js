@@ -29,7 +29,6 @@ const questions = [
   { image: 'assets/images/teil4.jpg', label: 'Turbolader', correct: false }
 ];
 
-// Web Audio API
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 function playClickSound() {
   const oscillator = audioCtx.createOscillator();
@@ -44,10 +43,10 @@ function playClickSound() {
 
 function sendMessage(selector, data) {
   socket.send(JSON.stringify([selector, data]));
-  console.log("📤 Nachricht gesendet:", selector, data);
 }
 
 function showQuestion(index) {
+  if (!questions[index]) return;
   const q = questions[index];
   imageElem.src = q.image;
   labelElem.textContent = q.label;
@@ -63,10 +62,10 @@ function handleAnswer(isYes) {
   playClickSound();
   answered = true;
 
-  const correct = questions[currentQuestion].correct;
-  const playerIsRight = (isYes === correct);
+  const correct = questions[currentQuestion]?.correct;
+  const isCorrect = isYes === correct;
 
-  localScore += playerIsRight ? 100 : -50;
+  localScore += isCorrect ? 100 : -50;
   scoreDisplay.textContent = localScore;
   scores[clientId] = localScore;
   updateLeaderboard();
@@ -79,19 +78,17 @@ function handleAnswer(isYes) {
   noBtn.disabled = true;
 }
 
-function startQuiz() {
+function startQuizMaster() {
   currentQuestion = 0;
-  scoreDisplay.textContent = localScore;
-  showQuestion(currentQuestion);
-  restartBtn.style.display = 'none';
+  sendMessage('*broadcast-message*', ['*question-index*', currentQuestion]);
 
   timer = setInterval(() => {
     currentQuestion++;
     if (currentQuestion >= questions.length) {
       clearInterval(timer);
-      showGameOver();
+      sendMessage('*broadcast-message*', ['*game-over*']);
     } else {
-      showQuestion(currentQuestion);
+      sendMessage('*broadcast-message*', ['*question-index*', currentQuestion]);
     }
   }, 8000);
 }
@@ -108,7 +105,6 @@ function resetGame() {
   currentQuestion = 0;
   localScore = 0;
   scores[clientId] = 0;
-
   infoElem.innerHTML = `Punkte: <span id="score-display">${localScore}</span>`;
   scoreDisplay = document.getElementById('score-display');
 
@@ -139,7 +135,6 @@ function resetGame() {
 
 function updateLeaderboard() {
   leaderboardElem.innerHTML = '<h3>LEADERBOARD</h3>';
-
   const activeScores = {};
   for (let i = 0; i < clientCount; i++) {
     if (scores[i] !== undefined) {
@@ -159,30 +154,31 @@ function updateLeaderboard() {
   }
 }
 
+// Event-Handler
 restartBtn.addEventListener('click', () => {
-  console.log("🔁 Restart-Button gedrückt von Spieler ID:", clientId);
-  if (clientId === 0 || clientId === '0') {
+  if (clientId === 0) {
     sendMessage('*broadcast-message*', ['*restart*']);
     resetGame();
     overlay.style.display = 'flex';
-    console.log("Neustart ausgeführt");
-  } else {
-    console.log("Kein Neustart erlaubt – nur Spieler 1 darf");
   }
 });
 
 startBtn.addEventListener('click', () => {
   if (clientId === 0) {
     sendMessage('*broadcast-message*', ['*start*']);
-  } else {
-    console.log("⌛ Warte auf Start von Spieler 1 …");
+    startQuizMaster(); // nur bei Player 1!
   }
 });
 
+yesBtn.addEventListener('click', () => handleAnswer(true));
+noBtn.addEventListener('click', () => handleAnswer(false));
+
+// WebSocket
 socket.addEventListener('open', () => {
   sendMessage('*enter-room*', roomName);
   sendMessage('*subscribe-client-count*');
-  setInterval(() => socket.send(''), 30000); // Keep-alive
+
+  setInterval(() => socket.send(''), 30000);
   setInterval(() => {
     sendMessage('*broadcast-message*', ['*score-update*', [clientId, localScore]]);
   }, 10000);
@@ -191,39 +187,43 @@ socket.addEventListener('open', () => {
 socket.addEventListener('message', (event) => {
   const data = JSON.parse(event.data);
   const selector = data[0];
-  console.log("📥 Nachricht empfangen:", selector, data[1]);
+  const payload = data[1];
 
   switch (selector) {
     case '*client-id*':
-      clientId = data[1];
+      clientId = payload;
       scores[clientId] = 0;
-      sendMessage('*broadcast-message*', ['*score-update*', [clientId, 0]]);
-      updateLeaderboard();
-
-      // ✅ Startscreen nach Verbindungsaufbau anzeigen
       overlay.style.display = 'flex';
       break;
 
     case '*client-count*':
-      clientCount = data[1];
+      clientCount = payload;
       updateLeaderboard();
       break;
 
     case '*score-update*': {
-      const [id, score] = data[1];
+      const [id, score] = payload;
       scores[id] = score;
       updateLeaderboard();
       break;
     }
 
+    case '*question-index*':
+      currentQuestion = payload;
+      showQuestion(currentQuestion);
+      break;
+
+    case '*game-over*':
+      showGameOver();
+      break;
+
     case '*restart*':
-      console.log("⏩ Neustartsignal empfangen!");
       resetGame();
+      overlay.style.display = 'flex';
       break;
 
     case '*start*':
       overlay.style.display = 'none';
-      startQuiz();
       break;
   }
 });
