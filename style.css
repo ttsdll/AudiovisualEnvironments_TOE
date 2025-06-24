@@ -63,18 +63,22 @@ body {
   padding: 0;
   cursor: pointer;
   transition: transform 0.2s ease-in-out;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .quiz-button img {
   width: 40px;
   height: 40px;
+  pointer-events: none;
 }
 
-.quiz-button.yes {
+.green-button {
   background-color: #2ecc71; /* Grün */
 }
 
-.quiz-button.no {
+.red-button {
   background-color: #e74c3c; /* Rot */
 }
 
@@ -135,4 +139,38 @@ body {
   font-weight: bold;
   text-align: center;
   padding: 3rem 0;
+}
+
+.start-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.start-content {
+  text-align: center;
+  color: white;
+  font-family: "montserrat", sans-serif;
+}
+
+.start-button {
+  background: #00c853;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  padding: 1rem 2rem;
+  margin-top: 1rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: "montserrat", sans-serif;
+  transition: background 0.3s ease;
+}
+
+.start-button:hover {
+  background: #00b344;
 }

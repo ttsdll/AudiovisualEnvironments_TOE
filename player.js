@@ -9,6 +9,8 @@ const leaderboardElem = document.getElementById('leaderboard');
 let scoreDisplay = document.getElementById('score-display');
 const restartBtn = document.getElementById('restart-btn');
 const indexElem = document.getElementById('client-index');
+const overlay = document.getElementById('start-overlay');
+const startBtn = document.getElementById('start-btn');
 
 let clientId = null;
 let clientCount = 0;
@@ -80,11 +82,8 @@ function handleAnswer(isYes) {
 function startQuiz() {
   currentQuestion = 0;
   scoreDisplay.textContent = localScore;
-  scores[clientId] = localScore;
-  sendMessage('*broadcast-message*', ['*score-update*', [clientId, localScore]]);
-  updateLeaderboard();
-  restartBtn.style.display = 'none';
   showQuestion(currentQuestion);
+  restartBtn.style.display = 'none';
 
   timer = setInterval(() => {
     currentQuestion++;
@@ -107,7 +106,8 @@ function showGameOver() {
 
 function resetGame() {
   currentQuestion = 0;
-  scoreDisplay.textContent = localScore;
+  localScore = 0;
+  scores[clientId] = 0;
 
   infoElem.innerHTML = `Punkte: <span id="score-display">${localScore}</span>`;
   scoreDisplay = document.getElementById('score-display');
@@ -121,8 +121,12 @@ function resetGame() {
 
   const buttonBox = document.querySelector('.button-box');
   buttonBox.innerHTML = `
-    <button id="yes-btn" class="quiz-button yes"><img src="assets/icons/check.svg" alt="Ja" /></button>
-    <button id="no-btn" class="quiz-button no"><img src="assets/icons/xmark.svg" alt="Nein" /></button>
+    <button id="yes-btn" class="quiz-button green-button">
+      <img src="assets/icons/check.svg" alt="Ja" />
+    </button>
+    <button id="no-btn" class="quiz-button red-button">
+      <img src="assets/icons/xmark.svg" alt="Nein" />
+    </button>
   `;
   yesBtn = document.getElementById('yes-btn');
   noBtn = document.getElementById('no-btn');
@@ -130,28 +134,20 @@ function resetGame() {
   noBtn.addEventListener('click', () => handleAnswer(false));
 
   restartBtn.style.display = 'none';
-  showQuestion(currentQuestion);
-
-  timer = setInterval(() => {
-    currentQuestion++;
-    if (currentQuestion >= questions.length) {
-      clearInterval(timer);
-      showGameOver();
-    } else {
-      showQuestion(currentQuestion);
-    }
-  }, 8000);
+  updateLeaderboard();
 }
 
 function updateLeaderboard() {
   leaderboardElem.innerHTML = '<h3>LEADERBOARD</h3>';
 
-  // Entferne Scores, die nicht mehr aktive Clients sind
-  Object.keys(scores).forEach(id => {
-    if (parseInt(id) >= clientCount) delete scores[id];
-  });
+  const activeScores = {};
+  for (let i = 0; i < clientCount; i++) {
+    if (scores[i] !== undefined) {
+      activeScores[i] = scores[i];
+    }
+  }
 
-  const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+  const sorted = Object.entries(activeScores).sort((a, b) => b[1] - a[1]);
   sorted.forEach(([id, score]) => {
     const entry = document.createElement('div');
     entry.textContent = `Spieler ${parseInt(id) + 1}: ${score}`;
@@ -163,24 +159,33 @@ function updateLeaderboard() {
   }
 }
 
-// Event Listener
-yesBtn.addEventListener('click', () => handleAnswer(true));
-noBtn.addEventListener('click', () => handleAnswer(false));
-
 restartBtn.addEventListener('click', () => {
+  console.log("🔁 Restart-Button gedrückt von Spieler ID:", clientId);
   if (clientId === 0 || clientId === '0') {
     sendMessage('*broadcast-message*', ['*restart*']);
     resetGame();
+    overlay.style.display = 'flex';
+    console.log("Neustart ausgeführt");
+  } else {
+    console.log("Kein Neustart erlaubt – nur Spieler 1 darf");
   }
 });
 
-// WebSocket Setup
+startBtn.addEventListener('click', () => {
+  if (clientId === 0) {
+    sendMessage('*broadcast-message*', ['*start*']);
+  } else {
+    console.log("⌛ Warte auf Start von Spieler 1 …");
+  }
+});
+
+yesBtn.addEventListener('click', () => handleAnswer(true));
+noBtn.addEventListener('click', () => handleAnswer(false));
+
 socket.addEventListener('open', () => {
   sendMessage('*enter-room*', roomName);
   sendMessage('*subscribe-client-count*');
-  setInterval(() => socket.send(''), 30000); // Keep-alive
-
-  // Sende regelmäßig Score zur Synchronisierung
+  setInterval(() => socket.send(''), 30000);
   setInterval(() => {
     sendMessage('*broadcast-message*', ['*score-update*', [clientId, localScore]]);
   }, 10000);
@@ -189,16 +194,14 @@ socket.addEventListener('open', () => {
 socket.addEventListener('message', (event) => {
   const data = JSON.parse(event.data);
   const selector = data[0];
-
   console.log("📥 Nachricht empfangen:", selector, data[1]);
 
   switch (selector) {
     case '*client-id*':
       clientId = data[1];
-      scores[clientId] = localScore;
-      sendMessage('*broadcast-message*', ['*score-update*', [clientId, localScore]]);
+      scores[clientId] = 0;
+      sendMessage('*broadcast-message*', ['*score-update*', [clientId, 0]]);
       updateLeaderboard();
-      startQuiz();
       break;
 
     case '*client-count*':
@@ -214,7 +217,13 @@ socket.addEventListener('message', (event) => {
     }
 
     case '*restart*':
+      console.log("⏩ Neustartsignal empfangen!");
       resetGame();
+      break;
+
+    case '*start*':
+      overlay.style.display = 'none';
+      startQuiz();
       break;
   }
 });
