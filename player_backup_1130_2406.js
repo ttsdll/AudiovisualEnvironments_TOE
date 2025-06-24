@@ -42,7 +42,7 @@ function playClickSound() {
 
 function sendMessage(selector, data) {
   socket.send(JSON.stringify([selector, data]));
-  console.log("📤 Nachricht gesendet:", selector, data);
+   console.log("📩 Nachricht empfangen:", selector, data[1]);
 }
 
 function showQuestion(index) {
@@ -185,18 +185,11 @@ socket.addEventListener('open', () => {
   sendMessage('*subscribe-client-count*');
   setInterval(() => socket.send(''), 30000); // Keep-alive
   console.log("WebSocket verbunden mit Raum:", roomName);
-
-  // ⏱️ Änderung 2: Score regelmäßig senden
-  setInterval(() => {
-    sendMessage('*broadcast-message*', ['*score-update*', [clientId, localScore]]);
-  }, 10000);
 });
 
 socket.addEventListener('message', (event) => {
   const data = JSON.parse(event.data);
   const selector = data[0];
-
-  console.log("📥 Nachricht empfangen:", selector, data[1]);
 
   switch (selector) {
     case '*client-id*':
@@ -209,10 +202,6 @@ socket.addEventListener('message', (event) => {
 
     case '*client-count*':
       clientCount = data[1];
-
-      // ✅ Änderung 1: Score nach clientCount aktualisieren
-      sendMessage('*broadcast-message*', ['*score-update*', [clientId, localScore]]);
-
       updateLeaderboard();
       break;
 

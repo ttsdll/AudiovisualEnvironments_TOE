@@ -89,9 +89,16 @@ body {
   box-shadow: inset 0 0 5px rgba(255, 255, 255, 0.1);
 }
 
+/* Scrollbar für viele Spieler im Leaderboard */
+.leaderboard-box {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
 .leaderboard-box div {
   margin: 0.3rem 0;
 }
+
 .restart-button {
   padding: 0.75rem 2rem;
   font-size: 1.2rem;
@@ -104,15 +111,16 @@ body {
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-  display: none;         /* Neu: standardmäßig unsichtbar */
-  margin-top: 1.5rem;     /* Neu: Abstand nach oben */
-  align-self: center;     /* Neu: mittige Ausrichtung in flex-Boxen */
+  display: none;
+  margin-top: 1.5rem;
+  align-self: center;
 }
 
 .restart-button:hover:not([disabled]) {
   background: rgba(255, 255, 255, 0.2);
   transform: scale(1.05);
 }
+
 .client-index {
   margin-top: 1rem;
   font-size: 0.9rem;

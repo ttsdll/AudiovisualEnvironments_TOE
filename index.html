@@ -4,23 +4,27 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>PartMatch Quiz</title>
+
+  <!-- Styles -->
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
   <div class="app-container">
+
+    <!-- Titel -->
     <h1 class="title">PartMatch Quiz</h1>
 
-    <!-- Anzeige der eigenen Spieler-ID und Gesamtanzahl -->
+    <!-- Anzeige der eigenen ID und Gesamtanzahl -->
     <div id="client-index" class="client-index">Verbindung …</div>
 
-    <!-- Fragebereich -->
+    <!-- Quizfrage -->
     <div id="question-container" class="question-box">
       <img id="part-image" src="" alt="Autoteil" />
       <p id="part-label">Warte auf Start …</p>
     </div>
 
-    <!-- Buttons Ja / Nein -->
+    <!-- Antwort-Buttons -->
     <div class="button-box">
       <button id="yes-btn" class="quiz-button">✅</button>
       <button id="no-btn" class="quiz-button">❌</button>
@@ -34,13 +38,14 @@
     <!-- Leaderboard -->
     <div id="leaderboard" class="leaderboard-box">
       <h3>Leaderboard</h3>
-      <!-- Spieler-Einträge werden via JS eingefügt -->
+      <!-- Dynamische Einträge folgen durch JavaScript -->
     </div>
 
-    <!-- Neustart-Button (nur sichtbar nach Spielende) -->
+    <!-- Restart-Button -->
     <button id="restart-btn" class="restart-button" style="display: none;">🔄 Neustarten</button>
   </div>
 
+  <!-- Skript -->
   <script src="player.js"></script>
 </body>
 </html>
