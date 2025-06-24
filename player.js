@@ -161,13 +161,9 @@ function updateLeaderboard() {
 }
 
 restartBtn.addEventListener('click', () => {
-  console.log("🔁 Restart-Button gedrückt von Spieler ID:", clientId);
   if (clientId === 0 || clientId === '0') {
     sendMessage('*broadcast-message*', ['*restart*']);
     resetGame();
-    console.log("Neustart ausgeführt");
-  } else {
-    console.log("Kein Neustart erlaubt – nur Spieler 1 darf");
   }
 });
 
@@ -177,6 +173,8 @@ noBtn.addEventListener('click', () => handleAnswer(false));
 socket.addEventListener('open', () => {
   sendMessage('*enter-room*', roomName);
   sendMessage('*subscribe-client-count*');
+
+  // Keep-alive und Score Sync
   setInterval(() => socket.send(''), 30000);
   setInterval(() => {
     sendMessage('*broadcast-message*', ['*score-update*', [clientId, localScore]]);
@@ -186,7 +184,6 @@ socket.addEventListener('open', () => {
 socket.addEventListener('message', (event) => {
   const data = JSON.parse(event.data);
   const selector = data[0];
-  console.log("📥 Nachricht empfangen:", selector, data[1]);
 
   switch (selector) {
     case '*client-id*':
@@ -210,7 +207,6 @@ socket.addEventListener('message', (event) => {
     }
 
     case '*restart*':
-      console.log("⏩ Neustartsignal empfangen!");
       resetGame();
       break;
   }
