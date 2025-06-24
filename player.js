@@ -27,7 +27,6 @@ const questions = [
   { image: 'assets/images/teil4.jpg', label: 'Turbolader', correct: false }
 ];
 
-// Web Audio API
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 function playClickSound() {
   const oscillator = audioCtx.createOscillator();
@@ -148,12 +147,6 @@ function resetGame() {
 function updateLeaderboard() {
   leaderboardElem.innerHTML = '<h3>LEADERBOARD</h3>';
 
-  for (let i = 0; i < clientCount; i++) {
-    if (!(i in scores)) {
-      scores[i] = 0;
-    }
-  }
-
   const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
   sorted.forEach(([id, score]) => {
     const entry = document.createElement('div');
@@ -183,10 +176,9 @@ restartBtn.addEventListener('click', () => {
 socket.addEventListener('open', () => {
   sendMessage('*enter-room*', roomName);
   sendMessage('*subscribe-client-count*');
-  setInterval(() => socket.send(''), 30000); // Keep-alive
+  setInterval(() => socket.send(''), 30000);
   console.log("WebSocket verbunden mit Raum:", roomName);
 
-  // ⏱️ Änderung 2: Score regelmäßig senden
   setInterval(() => {
     sendMessage('*broadcast-message*', ['*score-update*', [clientId, localScore]]);
   }, 10000);
@@ -209,16 +201,20 @@ socket.addEventListener('message', (event) => {
 
     case '*client-count*':
       clientCount = data[1];
-
-      // ✅ Änderung 1: Score nach clientCount aktualisieren
       sendMessage('*broadcast-message*', ['*score-update*', [clientId, localScore]]);
-
       updateLeaderboard();
       break;
 
     case '*score-update*': {
       const [id, score] = data[1];
       scores[id] = score;
+      updateLeaderboard();
+      break;
+    }
+
+    case '*player-left*': {
+      const leftId = data[1];
+      delete scores[leftId];
       updateLeaderboard();
       break;
     }
