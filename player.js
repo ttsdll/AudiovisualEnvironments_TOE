@@ -1,4 +1,6 @@
 const socket = new WebSocket('wss://nosch.uber.space/web-rooms/');
+const roomName = 'carquiz';
+
 let questionElem = document.getElementById('question-container');
 let infoElem = document.getElementById('info-container');
 let imageElem = document.getElementById('part-image');
@@ -18,8 +20,6 @@ let localScore = 0;
 let scores = {};
 let timer;
 
-const roomName = 'carquiz';
-
 const questions = [
   { image: 'assets/images/teil1.jpg', label: 'Zündkerze', correct: true },
   { image: 'assets/images/teil2.jpg', label: 'Lichtmaschine', correct: false },
@@ -27,10 +27,12 @@ const questions = [
   { image: 'assets/images/teil4.jpg', label: 'Turbolader', correct: false }
 ];
 
+// Sendet Nachricht an Server
 function sendMessage(selector, data) {
   socket.send(JSON.stringify([selector, data]));
 }
 
+// Zeigt eine Frage an
 function showQuestion(index) {
   const q = questions[index];
   imageElem.src = q.image;
@@ -42,12 +44,13 @@ function showQuestion(index) {
   noBtn.classList.remove('selected');
 }
 
+// Antwortverarbeitung
 function handleAnswer(isYes) {
   if (answered) return;
   answered = true;
 
   const correct = questions[currentQuestion].correct;
-  const isCorrect = (isYes === correct);
+  const isCorrect = isYes === correct;
 
   localScore += isCorrect ? 100 : -50;
   scoreDisplay.textContent = localScore;
@@ -62,6 +65,7 @@ function handleAnswer(isYes) {
   noBtn.disabled = true;
 }
 
+// Startet das Quiz
 function startQuiz() {
   currentQuestion = 0;
   localScore = 0;
@@ -83,6 +87,7 @@ function startQuiz() {
   }, 8000);
 }
 
+// Spielende
 function showGameOver() {
   questionElem.innerHTML = '<div class="game-over-text">GAME OVER</div>';
   infoElem.innerHTML = `<p>Dein Punktestand: ${localScore}</p>`;
@@ -91,6 +96,7 @@ function showGameOver() {
   updateLeaderboard();
 }
 
+// Startet das Spiel neu
 function resetGame() {
   currentQuestion = 0;
   localScore = 0;
@@ -116,10 +122,9 @@ function resetGame() {
       <img src="assets/icons/xmark.svg" alt="Nein" />
     </button>
   `;
-  yesBtn = document.getElementById('yes-btn');
-  noBtn = document.getElementById('no-btn');
-  yesBtn.addEventListener('click', () => handleAnswer(true));
-  noBtn.addEventListener('click', () => handleAnswer(false));
+
+  // Buttons neu binden
+  bindButtonEvents();
 
   restartBtn.style.display = 'none';
   showQuestion(currentQuestion);
@@ -135,6 +140,7 @@ function resetGame() {
   }, 8000);
 }
 
+// Aktualisiert das Leaderboard
 function updateLeaderboard() {
   leaderboardElem.innerHTML = '<h3>LEADERBOARD</h3>';
 
@@ -154,6 +160,18 @@ function updateLeaderboard() {
   }
 }
 
+// Fügt den Buttons die Event Listener hinzu
+function bindButtonEvents() {
+  yesBtn = document.getElementById('yes-btn');
+  noBtn = document.getElementById('no-btn');
+
+  if (yesBtn && noBtn) {
+    yesBtn.addEventListener('click', () => handleAnswer(true));
+    noBtn.addEventListener('click', () => handleAnswer(false));
+  }
+}
+
+// Restart-Button nur für Spieler 1
 restartBtn.addEventListener('click', () => {
   if (clientId === 0) {
     sendMessage('*broadcast-message*', ['*restart*']);
@@ -161,11 +179,13 @@ restartBtn.addEventListener('click', () => {
   }
 });
 
+// WebSocket Setup
 socket.addEventListener('open', () => {
   sendMessage('*enter-room*', roomName);
   sendMessage('*subscribe-client-count*');
 
   setInterval(() => socket.send(''), 30000); // Keep-alive
+
   setInterval(() => {
     sendMessage('*broadcast-message*', ['*score-update*', [clientId, localScore]]);
   }, 10000);
@@ -202,3 +222,6 @@ socket.addEventListener('message', (event) => {
       break;
   }
 });
+
+// Initialisiere Button-Events beim ersten Laden
+bindButtonEvents();
