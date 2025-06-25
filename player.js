@@ -27,22 +27,8 @@ const questions = [
   { image: 'assets/images/teil4.jpg', label: 'Turbolader', correct: false }
 ];
 
-// Web Audio API
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-function playClickSound() {
-  const oscillator = audioCtx.createOscillator();
-  const gainNode = audioCtx.createGain();
-  oscillator.type = 'square';
-  oscillator.frequency.setValueAtTime(400, audioCtx.currentTime);
-  gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime);
-  oscillator.connect(gainNode).connect(audioCtx.destination);
-  oscillator.start();
-  oscillator.stop(audioCtx.currentTime + 0.1);
-}
-
 function sendMessage(selector, data) {
   socket.send(JSON.stringify([selector, data]));
-  console.log("📤 Nachricht gesendet:", selector, data);
 }
 
 function showQuestion(index) {
@@ -58,13 +44,12 @@ function showQuestion(index) {
 
 function handleAnswer(isYes) {
   if (answered) return;
-  playClickSound();
   answered = true;
 
   const correct = questions[currentQuestion].correct;
-  const playerIsRight = (isYes === correct);
+  const isCorrect = (isYes === correct);
 
-  localScore += playerIsRight ? 100 : -50;
+  localScore += isCorrect ? 100 : -50;
   scoreDisplay.textContent = localScore;
   scores[clientId] = localScore;
   updateLeaderboard();
@@ -80,9 +65,9 @@ function handleAnswer(isYes) {
 function startQuiz() {
   currentQuestion = 0;
   localScore = 0;
+  scores[clientId] = 0;
   scoreDisplay.textContent = localScore;
-  scores[clientId] = localScore;
-  sendMessage('*broadcast-message*', ['*score-update*', [clientId, localScore]]);
+  sendMessage('*broadcast-message*', ['*score-update*', [clientId, 0]]);
   updateLeaderboard();
   restartBtn.style.display = 'none';
   showQuestion(currentQuestion);
@@ -110,6 +95,7 @@ function resetGame() {
   currentQuestion = 0;
   localScore = 0;
   scores[clientId] = 0;
+  scoreDisplay.textContent = localScore;
 
   infoElem.innerHTML = `Punkte: <span id="score-display">${localScore}</span>`;
   scoreDisplay = document.getElementById('score-display');
@@ -123,8 +109,12 @@ function resetGame() {
 
   const buttonBox = document.querySelector('.button-box');
   buttonBox.innerHTML = `
-    <button id="yes-btn" class="quiz-button">✅</button>
-    <button id="no-btn" class="quiz-button">❌</button>
+    <button id="yes-btn" class="quiz-button green-button">
+      <img src="assets/icons/check.svg" alt="Ja" />
+    </button>
+    <button id="no-btn" class="quiz-button red-button">
+      <img src="assets/icons/xmark.svg" alt="Nein" />
+    </button>
   `;
   yesBtn = document.getElementById('yes-btn');
   noBtn = document.getElementById('no-btn');
@@ -148,11 +138,9 @@ function resetGame() {
 function updateLeaderboard() {
   leaderboardElem.innerHTML = '<h3>LEADERBOARD</h3>';
 
-  for (let i = 0; i < clientCount; i++) {
-    if (!(i in scores)) {
-      scores[i] = 0;
-    }
-  }
+  Object.keys(scores).forEach(id => {
+    if (parseInt(id) >= clientCount) delete scores[id];
+  });
 
   const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
   sorted.forEach(([id, score]) => {
@@ -166,27 +154,18 @@ function updateLeaderboard() {
   }
 }
 
-yesBtn.addEventListener('click', () => handleAnswer(true));
-noBtn.addEventListener('click', () => handleAnswer(false));
-
 restartBtn.addEventListener('click', () => {
-  console.log("🔁 Restart-Button gedrückt von Spieler ID:", clientId);
-  if (clientId === 0 || clientId === '0') {
+  if (clientId === 0) {
     sendMessage('*broadcast-message*', ['*restart*']);
     resetGame();
-    console.log("Neustart ausgeführt");
-  } else {
-    console.log("Kein Neustart erlaubt – nur Spieler 1 darf");
   }
 });
 
 socket.addEventListener('open', () => {
   sendMessage('*enter-room*', roomName);
   sendMessage('*subscribe-client-count*');
-  setInterval(() => socket.send(''), 30000); // Keep-alive
-  console.log("WebSocket verbunden mit Raum:", roomName);
 
-  // ⏱️ Änderung 2: Score regelmäßig senden
+  setInterval(() => socket.send(''), 30000); // Keep-alive
   setInterval(() => {
     sendMessage('*broadcast-message*', ['*score-update*', [clientId, localScore]]);
   }, 10000);
@@ -195,8 +174,6 @@ socket.addEventListener('open', () => {
 socket.addEventListener('message', (event) => {
   const data = JSON.parse(event.data);
   const selector = data[0];
-
-  console.log("📥 Nachricht empfangen:", selector, data[1]);
 
   switch (selector) {
     case '*client-id*':
@@ -209,10 +186,7 @@ socket.addEventListener('message', (event) => {
 
     case '*client-count*':
       clientCount = data[1];
-
-      // ✅ Änderung 1: Score nach clientCount aktualisieren
       sendMessage('*broadcast-message*', ['*score-update*', [clientId, localScore]]);
-
       updateLeaderboard();
       break;
 
@@ -224,7 +198,6 @@ socket.addEventListener('message', (event) => {
     }
 
     case '*restart*':
-      console.log("⏩ Neustartsignal empfangen!");
       resetGame();
       break;
   }

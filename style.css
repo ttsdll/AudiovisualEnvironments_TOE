@@ -30,6 +30,7 @@ body {
   background: #ffffff;
   border-radius: 15px;
   padding: 1rem;
+  box-shadow: none; /* Drop-Shadow entfernt */
 }
 
 .question-box img {
@@ -39,7 +40,7 @@ body {
   border-radius: 15px;
   object-fit: contain;
   margin-bottom: 1rem;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+  box-shadow: none; /* ebenfalls Drop-Shadow entfernt */
 }
 
 .question-box p {
@@ -56,33 +57,43 @@ body {
 }
 
 .quiz-button {
-  background: rgba(255, 255, 255, 0.1);
-  border: 2px solid #ffffff20;
+  border: none;
   border-radius: 50%;
   width: 80px;
   height: 80px;
-  font-size: 2rem;
-  color: #ffffff;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
-  backdrop-filter: blur(5px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.quiz-button:hover {
-  background: rgba(255, 255, 255, 0.2);
+.quiz-button img {
+  width: 48px;
+  height: 48px;
+  pointer-events: none;
+}
+
+.green-button {
+  background-color: #2ecc71;
+}
+
+.red-button {
+  background-color: #e74c3c;
+}
+
+.quiz-button:hover:not(:disabled) {
   transform: scale(1.05);
 }
 
 .quiz-button:disabled {
   opacity: 0.3;
-  cursor: not-allowed;
   pointer-events: none;
-  transform: scale(1);
 }
 
 .quiz-button.selected {
-  border: 2px solid #ffffff;
-  background: rgba(255, 255, 255, 0.25);
+  opacity: 0.9;
+  filter: brightness(1.2);
 }
 
 .info-box,
